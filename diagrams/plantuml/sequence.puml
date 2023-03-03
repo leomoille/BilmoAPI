@@ -1,0 +1,26 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+autonumber
+
+actor Client as user
+participant API as api
+database "Base de données" as db
+
+user -> api : connexion
+api -> db : vérification
+alt utilisateur et mot de passe correct
+    api <-- db : ok
+    user <-- api : token
+    user -> api : voir la liste des produits
+    alt token valide
+    api -> db : récupère la liste des produits
+    api <-- db : liste des produits
+    user <-- api : liste des produits
+    else token invalide
+    user <-- api : token invalide
+    end
+else utilisateur ou mot de passe incorrect
+    api <-- db : erreur
+    user <-- api : erreur
+end
+@enduml
