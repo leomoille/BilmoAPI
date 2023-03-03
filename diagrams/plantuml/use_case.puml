@@ -1,0 +1,21 @@
+@startuml
+'https://plantuml.com/use-case-diagram
+
+actor Client as c
+(S'authentifier) as (auth)
+(Consulter la liste des produits) as (consultProductList)
+(Consulter les détails d'un produit) as (consultProductDetails)
+(Consulter la liste des utilisateurs inscrits liés à un client sur le site web) as (consultUserClient)
+(Consulter le détail d’un utilisateur inscrit lié à un client) as (consultUserDetails)
+(Ajouter un nouvel utilisateur lié à un client) as (addUser)
+(Supprimer un utilisateur ajouté par un client) as (removeUser)
+
+c --> (auth)
+(auth) .> (consultProductList) : <<extends>>
+(consultProductList) .> (consultProductDetails) : <<extends>>
+(auth) ..> (consultUserClient) : <<extends>>
+(consultUserClient) .> (consultUserDetails) : <<extends>>
+(consultUserClient) ..> (addUser) : <<extends>>
+(consultUserClient) ..> (removeUser) : <<extends>>
+
+@enduml

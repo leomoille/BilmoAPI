@@ -1,0 +1,23 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class User {
+    + username: String
+    + email: String
+    + password: String
+}
+class Client {
+    + username: String
+    + email: String
+}
+class Product {
+    + name: String
+    + price: Float
+}
+
+Client "1" *- "*" User
+Client "1..*" *-- "*" Product
+User "*" - "*" Product
+
+
+@enduml
