@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User
@@ -19,10 +20,25 @@ class User
 
     #[ORM\Column(length: 255)]
     #[Groups(["getProducts", "getUsers"])]
+    #[Assert\NotBlank(message: "L'utilisateur doit avoir un nom")]
+    #[Assert\Length(
+        min: 1,
+        max: 255,
+        minMessage: "Le nom de l'utilisateur doit faire au moins {{ limit }} caractères",
+        maxMessage: "Le nom de l'utilisateur ne peut pas faire plus de {{ limit }} caractères"
+    )]
     private ?string $username = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(["getProducts", "getUsers"])]
+    #[Assert\NotBlank(message: "L'utilisateur doit avoir un email")]
+    #[Assert\Email(message: "L'email {{ value }} n'est pas un email valide")]
+    #[Assert\Length(
+        min: 1,
+        max: 255,
+        minMessage: "L'email de l'utilisateur doit faire au moins {{ limit }} caractères",
+        maxMessage: "L'email de l'utilisateur ne peut pas faire plus de {{ limit }} caractères"
+    )]
     private ?string $email = null;
 
     #[ORM\ManyToMany(targetEntity: Product::class, inversedBy: 'users', cascade: ['persist'])]

@@ -10,10 +10,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UserController extends AbstractController
 {
@@ -58,10 +60,17 @@ class UserController extends AbstractController
         Request $request,
         SerializerInterface $serializer,
         EntityManagerInterface $entityManager,
-        UrlGeneratorInterface $urlGenerator
+        UrlGeneratorInterface $urlGenerator,
+        ValidatorInterface $validator
     ): JsonResponse {
         /** @var User $user */
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
+
+        $errors = $validator->validate($user);
+        if ($errors->count() > 0) {
+            throw new HttpException(JsonResponse::HTTP_BAD_REQUEST, $errors[0]->getMessage());
+        }
+
         $user->setClient($this->getUser());
         $entityManager->persist($user);
         $entityManager->flush();
@@ -82,7 +91,8 @@ class UserController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
-        ProductRepository $productRepository
+        ProductRepository $productRepository,
+        ValidatorInterface $validator
     ): JsonResponse {
         if ($user->getClient() !== $this->getUser()) {
             return new JsonResponse(null, Response::HTTP_NOT_FOUND);
@@ -104,6 +114,11 @@ class UserController extends AbstractController
             for ($i = 0; $i < count($addedProducts); $i++) {
                 $updatedUser->addProduct($addedProducts[$i]);
             }
+        }
+
+        $errors = $validator->validate($user);
+        if ($errors->count() > 0) {
+            throw new HttpException(JsonResponse::HTTP_BAD_REQUEST, $errors[0]->getMessage());
         }
 
         $entityManager->persist($user);
