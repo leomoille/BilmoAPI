@@ -6,6 +6,8 @@ use App\Entity\Product;
 use App\Repository\ProductRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use JMS\Serializer\SerializationContext;
+use JMS\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,8 +15,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ProductController extends AbstractController
@@ -23,7 +23,8 @@ class ProductController extends AbstractController
     public function getProductList(ProductRepository $productRepository, SerializerInterface $serializer): JsonResponse
     {
         $productList = $productRepository->findBy(['client' => $this->getUser()]);
-        $jsonProductList = $serializer->serialize($productList, 'json', ['groups' => 'getProducts']);
+        $context = SerializationContext::create()->setGroups(['getProducts']);
+        $jsonProductList = $serializer->serialize($productList, 'json', $context);
 
         return new JsonResponse($jsonProductList, Response::HTTP_OK, [], true);
     }
@@ -37,7 +38,8 @@ class ProductController extends AbstractController
             return new JsonResponse(null, Response::HTTP_NOT_FOUND);
         }
 
-        $jsonProduct = $serializer->serialize($product, 'json', ['groups' => 'getProducts']);
+        $context = SerializationContext::create()->setGroups(['getProducts']);
+        $jsonProduct = $serializer->serialize($product, 'json', $context);
 
         return new JsonResponse($jsonProduct, Response::HTTP_OK, [], true);
     }
@@ -75,7 +77,8 @@ class ProductController extends AbstractController
         $entityManager->persist($product);
         $entityManager->flush();
 
-        $jsonProduct = $serializer->serialize($product, 'json', ['groups' => 'getProducts']);
+        $context = SerializationContext::create()->setGroups(['getProducts']);
+        $jsonProduct = $serializer->serialize($product, 'json', $context);
         $location = $urlGenerator->generate(
             'detailProduct',
             ['id' => $product->getId()],
@@ -87,24 +90,26 @@ class ProductController extends AbstractController
 
     #[Route('/api/products/{id}', name: 'updateProduct', methods: ['PUT'])]
     public function updateProduct(
-        Product $product,
+        Product $currentProduct,
         Request $request,
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
         UserRepository $userRepository,
         ValidatorInterface $validator
     ): JsonResponse {
-        if ($product->getClient() !== $this->getUser()) {
+        if ($currentProduct->getClient() !== $this->getUser()) {
             return new JsonResponse(null, Response::HTTP_NOT_FOUND);
         }
 
-        /** @var Product $updatedProduct */
-        $updatedProduct = $serializer->deserialize(
-            $request->getContent(),
-            Product::class,
-            'json',
-            [AbstractNormalizer::OBJECT_TO_POPULATE => $product]
-        );
+        /** @var Product $newProduct */
+        $newProduct = $serializer->deserialize($request->getContent(), Product::class, 'json');
+            !$currentProduct->getName() ?? $currentProduct->setName($newProduct->getName());
+            !$currentProduct->getPrice() ?? $currentProduct->setPrice($newProduct->getPrice());
+
+        $errors = $validator->validate($currentProduct);
+        if ($errors->count() > 0) {
+            throw new HttpException(JsonResponse::HTTP_BAD_REQUEST, $errors[0]->getMessage());
+        }
 
         $content = $request->toArray();
         $usersId = $content['usersId'] ?? -1;
@@ -112,16 +117,11 @@ class ProductController extends AbstractController
 
         if ($usersId) {
             for ($i = 0; $i < count($newUsers); $i++) {
-                $updatedProduct->addUser($newUsers[$i]);
+                $currentProduct->addUser($newUsers[$i]);
             }
         }
 
-        $errors = $validator->validate($product);
-        if ($errors->count() > 0) {
-            throw new HttpException(JsonResponse::HTTP_BAD_REQUEST, $errors[0]->getMessage());
-        }
-
-        $entityManager->persist($product);
+        $entityManager->persist($currentProduct);
         $entityManager->flush();
 
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
