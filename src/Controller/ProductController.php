@@ -20,7 +20,7 @@ class ProductController extends AbstractController
     #[Route('/api/products', name: 'products', methods: ['GET'])]
     public function getProductList(ProductRepository $productRepository, SerializerInterface $serializer): JsonResponse
     {
-        $productList = $productRepository->findAll();
+        $productList = $productRepository->findBy(['client' => $this->getUser()]);
         $jsonProductList = $serializer->serialize($productList, 'json', ['groups' => 'getProducts']);
 
         return new JsonResponse($jsonProductList, Response::HTTP_OK, [], true);
@@ -31,6 +31,10 @@ class ProductController extends AbstractController
         Product $product,
         SerializerInterface $serializer,
     ): JsonResponse {
+        if ($product->getClient() !== $this->getUser()) {
+            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
+        }
+
         $jsonProduct = $serializer->serialize($product, 'json', ['groups' => 'getProducts']);
 
         return new JsonResponse($jsonProduct, Response::HTTP_OK, [], true);
@@ -39,6 +43,10 @@ class ProductController extends AbstractController
     #[Route('/api/products/{id}', name: 'deleteProduct', methods: ['DELETE'])]
     public function deleteProduct(Product $product, EntityManagerInterface $entityManager): JsonResponse
     {
+        if ($product->getClient() !== $this->getUser()) {
+            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
+        }
+
         $entityManager->remove($product);
         $entityManager->flush();
 
@@ -52,7 +60,9 @@ class ProductController extends AbstractController
         EntityManagerInterface $entityManager,
         UrlGeneratorInterface $urlGenerator
     ): JsonResponse {
+        /** @var Product $product */
         $product = $serializer->deserialize($request->getContent(), Product::class, 'json');
+        $product->setClient($this->getUser());
         $entityManager->persist($product);
         $entityManager->flush();
 
@@ -74,6 +84,10 @@ class ProductController extends AbstractController
         SerializerInterface $serializer,
         UserRepository $userRepository
     ): JsonResponse {
+        if ($product->getClient() !== $this->getUser()) {
+            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
+        }
+
         /** @var Product $updatedProduct */
         $updatedProduct = $serializer->deserialize(
             $request->getContent(),
