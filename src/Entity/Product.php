@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 class Product
@@ -19,10 +20,21 @@ class Product
 
     #[ORM\Column(length: 255)]
     #[Groups(["getProducts", "getUsers"])]
+    #[Assert\NotBlank(message: "Le produit doit avoir un nom")]
+    #[Assert\Type('string', message: "La valeur {{ value }} n'est pas un {{ type }} valide")]
+    #[Assert\Length(
+        min: 1,
+        max: 255,
+        minMessage: "Le nom du produit doit faire au moins {{ limit }} caractères",
+        maxMessage: "Le nom du produit ne peut pas faire plus de {{ limit }} caractères"
+    )]
     private ?string $name = null;
 
     #[ORM\Column]
     #[Groups(["getProducts", "getUsers"])]
+    #[Assert\NotBlank(message: "Le produit doit avoir un prix")]
+    #[Assert\Positive(message: "Le prix ne peut pas être négatif ou égale à 0")]
+    #[Assert\Type('int', message: "La valeur {{ value }} n'est pas un {{ type }} valide")]
     private ?int $price = null;
 
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'products', cascade: ['persist'])]
