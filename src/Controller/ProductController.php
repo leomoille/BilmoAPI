@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Product;
 use App\Repository\ProductRepository;
 use App\Repository\UserRepository;
+use App\Service\ClientPropertyChecker;
 use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
@@ -33,10 +34,9 @@ class ProductController extends AbstractController
     public function getDetailProduct(
         Product $product,
         SerializerInterface $serializer,
+        ClientPropertyChecker $clientPropertyChecker
     ): JsonResponse {
-        if ($product->getClient() !== $this->getUser()) {
-            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
-        }
+        $clientPropertyChecker->control($product->getClient(), $this->getUser());
 
         $context = SerializationContext::create()->setGroups(['getProducts']);
         $jsonProduct = $serializer->serialize($product, 'json', $context);
@@ -45,11 +45,12 @@ class ProductController extends AbstractController
     }
 
     #[Route('/api/products/{id}', name: 'deleteProduct', methods: ['DELETE'])]
-    public function deleteProduct(Product $product, EntityManagerInterface $entityManager): JsonResponse
-    {
-        if ($product->getClient() !== $this->getUser()) {
-            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
-        }
+    public function deleteProduct(
+        Product $product,
+        EntityManagerInterface $entityManager,
+        ClientPropertyChecker $clientPropertyChecker
+    ): JsonResponse {
+        $clientPropertyChecker->control($product->getClient(), $this->getUser());
 
         $entityManager->remove($product);
         $entityManager->flush();
