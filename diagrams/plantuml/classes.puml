@@ -6,7 +6,6 @@ class User {
     + email: String
 }
 class Client {
-    + username: String
     + email: String
     + password: String
 }

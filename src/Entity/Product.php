@@ -29,6 +29,9 @@ class Product
     #[Groups(["getProducts"])]
     private Collection $users;
 
+    #[ORM\ManyToOne(inversedBy: 'products')]
+    private ?Client $client = null;
+
     public function __construct()
     {
         $this->users = new ArrayCollection();
@@ -86,6 +89,18 @@ class Product
         if ($this->users->removeElement($user)) {
             $user->removeProduct($this);
         }
+
+        return $this;
+    }
+
+    public function getClient(): ?Client
+    {
+        return $this->client;
+    }
+
+    public function setClient(?Client $client): self
+    {
+        $this->client = $client;
 
         return $this;
     }

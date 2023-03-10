@@ -20,7 +20,7 @@ class UserController extends AbstractController
     #[Route('/api/users', name: 'users', methods: ['GET'])]
     public function getUserList(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
-        $productList = $userRepository->findAll();
+        $productList = $userRepository->findBy(['client' => $this->getUser()]);
         $jsonUserList = $serializer->serialize($productList, 'json', ['groups' => 'getUsers']);
 
         return new JsonResponse($jsonUserList, Response::HTTP_OK, [], true);
@@ -31,6 +31,10 @@ class UserController extends AbstractController
         User $user,
         SerializerInterface $serializer,
     ): JsonResponse {
+        if ($user->getClient() !== $this->getUser()) {
+            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
+        }
+
         $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'getUsers']);
 
         return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
@@ -39,6 +43,10 @@ class UserController extends AbstractController
     #[Route('/api/users/{id}', name: 'deleteUser', methods: ['DELETE'])]
     public function deleteUser(User $user, EntityManagerInterface $entityManager): JsonResponse
     {
+        if ($user->getClient() !== $this->getUser()) {
+            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
+        }
+
         $entityManager->remove($user);
         $entityManager->flush();
 
@@ -52,7 +60,9 @@ class UserController extends AbstractController
         EntityManagerInterface $entityManager,
         UrlGeneratorInterface $urlGenerator
     ): JsonResponse {
+        /** @var User $user */
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
+        $user->setClient($this->getUser());
         $entityManager->persist($user);
         $entityManager->flush();
 
@@ -74,6 +84,10 @@ class UserController extends AbstractController
         SerializerInterface $serializer,
         ProductRepository $productRepository
     ): JsonResponse {
+        if ($user->getClient() !== $this->getUser()) {
+            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
+        }
+
         /** @var User $updatedUser */
         $updatedUser = $serializer->deserialize(
             $request->getContent(),
