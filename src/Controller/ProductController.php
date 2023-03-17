@@ -9,6 +9,8 @@ use App\Service\ClientPropertyChecker;
 use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use OpenApi\Annotations as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,6 +22,37 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ProductController extends AbstractController
 {
+    /**
+     * Cette méthode permet de récupérer l'ensemble de vos produits.
+     *
+     * @OA\Response(
+     *     response=204,
+     *     description="Retourne les informations du produit",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=Product::class, groups={"getProducts"}))
+     *     )
+     * )
+     * @OA\Parameter(
+     *     name="page",
+     *     in="query",
+     *     description="La page que l'on veut récupérer",
+     *     @OA\Schema(type="int")
+     * )
+     *
+     * @OA\Parameter(
+     *     name="limit",
+     *     in="query",
+     *     description="Le nombre d'éléments que l'on veut récupérer",
+     *     @OA\Schema(type="int")
+     * )
+     * @OA\Tag(name="Products")
+     *
+     *
+     * @param ProductRepository $productRepository
+     * @param SerializerInterface $serializer
+     * @return JsonResponse
+     */
     #[Route('/api/products', name: 'products', methods: ['GET'])]
     public function getProductList(ProductRepository $productRepository, SerializerInterface $serializer): JsonResponse
     {
@@ -30,6 +63,25 @@ class ProductController extends AbstractController
         return new JsonResponse($jsonProductList, Response::HTTP_OK, [], true);
     }
 
+    /**
+     * Cette méthode permet de récupérer les informations d'un de vos produits.
+     *
+     * @OA\Response(
+     *     response=200,
+     *     description="Retourne les informations du produit",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=Product::class, groups={"getProducts"}))
+     *     )
+     * )
+     * @OA\Tag(name="Products")
+     *
+     *
+     * @param Product $product
+     * @param SerializerInterface $serializer
+     * @param ClientPropertyChecker $clientPropertyChecker
+     * @return JsonResponse
+     */
     #[Route('/api/products/{id}', name: 'detailProduct', methods: ['GET'])]
     public function getDetailProduct(
         Product $product,
@@ -44,6 +96,25 @@ class ProductController extends AbstractController
         return new JsonResponse($jsonProduct, Response::HTTP_OK, [], true);
     }
 
+    /**
+     * Cette méthode permet de supprimer un de vos produits.
+     *
+     * @OA\Response(
+     *     response=204,
+     *     description="Supprime un produit",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=Product::class, groups={"getProducts"}))
+     *     )
+     * )
+     * @OA\Tag(name="Products")
+     *
+     *
+     * @param Product $product
+     * @param EntityManagerInterface $entityManager
+     * @param ClientPropertyChecker $clientPropertyChecker
+     * @return JsonResponse
+     */
     #[Route('/api/products/{id}', name: 'deleteProduct', methods: ['DELETE'])]
     public function deleteProduct(
         Product $product,
@@ -58,6 +129,39 @@ class ProductController extends AbstractController
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
+    /**
+     * Cette méthode permet de créer un produit.
+     *
+     * @OA\Response(
+     *     response=201,
+     *     description="Créer un produit",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=Product::class, groups={"getProducts"}))
+     *     )
+     * )
+     * @OA\Parameter(
+     *     name="name",
+     *     in="query",
+     *     description="Nom du produit",
+     *     @OA\Schema(type="string")
+     * )
+     * @OA\Parameter(
+     *     name="price",
+     *     in="query",
+     *     description="Prix du produit",
+     *     @OA\Schema(type="float")
+     * )
+     * @OA\Tag(name="Products")
+     *
+     *
+     * @param Request $request
+     * @param SerializerInterface $serializer
+     * @param EntityManagerInterface $entityManager
+     * @param UrlGeneratorInterface $urlGenerator
+     * @param ValidatorInterface $validator
+     * @return JsonResponse
+     */
     #[Route('/api/products', name: "createProduct", methods: ['POST'])]
     public function createProduct(
         Request $request,
@@ -89,6 +193,50 @@ class ProductController extends AbstractController
         return new JsonResponse($jsonProduct, Response::HTTP_CREATED, ['Location' => $location], true);
     }
 
+    /**
+     * Cette méthode permet de mettre à jour un produit.
+     *
+     * @OA\Response(
+     *     response=204,
+     *     description="Met à jour un produit",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=Product::class, groups={"getProducts"}))
+     *     )
+     * )
+     * @OA\Parameter(
+     *     name="name",
+     *     in="query",
+     *     description="Nom du produit",
+     *     @OA\Schema(type="string")
+     * )
+     * @OA\Parameter(
+     *     name="price",
+     *     in="query",
+     *     description="Prix du produit",
+     *     @OA\Schema(type="float")
+     * )
+     * @OA\Parameter(
+     *     name="usersId",
+     *     in="query",
+     *     description="Liste des id utilisateurs",
+     *     @OA\Schema(
+     *         schema="ExampleResponse",
+     *         type="array",
+     *         @OA\Items(ref=@Model(type=User::class)),
+     *     )
+     * )
+     * @OA\Tag(name="Products")
+     *
+     *
+     * @param Product $currentProduct
+     * @param Request $request
+     * @param EntityManagerInterface $entityManager
+     * @param SerializerInterface $serializer
+     * @param UserRepository $userRepository
+     * @param ValidatorInterface $validator
+     * @return JsonResponse
+     */
     #[Route('/api/products/{id}', name: 'updateProduct', methods: ['PUT'])]
     public function updateProduct(
         Product $currentProduct,
