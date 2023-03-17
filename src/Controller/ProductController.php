@@ -27,8 +27,8 @@ class ProductController extends AbstractController
      * Cette méthode permet de récupérer l'ensemble de vos produits.
      *
      * @OA\Response(
-     *     response=204,
-     *     description="Retourne les informations du produit",
+     *     response=200,
+     *     description="Retourne la liste des produits",
      *     @OA\JsonContent(
      *        type="array",
      *        @OA\Items(ref=@Model(type=Product::class, groups={"getProducts"}))
@@ -47,7 +47,7 @@ class ProductController extends AbstractController
      *     description="Le nombre d'éléments que l'on veut récupérer",
      *     @OA\Schema(type="int")
      * )
-     * @OA\Tag(name="Products")
+     * @OA\Tag(name="Produits")
      *
      *
      * @param ProductRepository $productRepository
@@ -75,7 +75,7 @@ class ProductController extends AbstractController
      *        @OA\Items(ref=@Model(type=Product::class, groups={"getProducts"}))
      *     )
      * )
-     * @OA\Tag(name="Products")
+     * @OA\Tag(name="Produits")
      *
      *
      * @param Product $product
@@ -108,7 +108,7 @@ class ProductController extends AbstractController
      *        @OA\Items(ref=@Model(type=Product::class, groups={"getProducts"}))
      *     )
      * )
-     * @OA\Tag(name="Products")
+     * @OA\Tag(name="Produits")
      *
      *
      * @param Product $product
@@ -153,7 +153,7 @@ class ProductController extends AbstractController
      *     description="Prix du produit",
      *     @OA\Schema(type="float")
      * )
-     * @OA\Tag(name="Products")
+     * @OA\Tag(name="Produits")
      *
      *
      * @param Request $request
@@ -230,7 +230,7 @@ class ProductController extends AbstractController
      *         )
      *     )
      * )
-     * @OA\Tag(name="Products")
+     * @OA\Tag(name="Produits")
      *
      *
      * @param Product $currentProduct
