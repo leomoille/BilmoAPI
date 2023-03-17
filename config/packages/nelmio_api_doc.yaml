@@ -2,7 +2,7 @@ nelmio_api_doc:
     documentation:
         info:
             title: Bilmo API
-            description: This is an awesome app!
+            description: API permettant aux clients de BileMo de gérer leurs clients et produits.
             version: 1.0.0
         paths:
             /api/login_check:
