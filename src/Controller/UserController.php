@@ -9,6 +9,8 @@ use App\Service\ClientPropertyChecker;
 use Doctrine\ORM\EntityManagerInterface;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use OpenApi\Annotations as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,6 +22,37 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UserController extends AbstractController
 {
+    /**
+     * Cette méthode permet de récupérer l'ensemble de vos utilisateurs.
+     *
+     * @OA\Response(
+     *     response=200,
+     *     description="Retourne la liste des utilisateurs",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=User::class, groups={"getUsers"}))
+     *     )
+     * )
+     * @OA\Parameter(
+     *     name="page",
+     *     in="query",
+     *     description="La page que l'on veut récupérer",
+     *     @OA\Schema(type="int")
+     * )
+     *
+     * @OA\Parameter(
+     *     name="limit",
+     *     in="query",
+     *     description="Le nombre d'éléments que l'on veut récupérer",
+     *     @OA\Schema(type="int")
+     * )
+     * @OA\Tag(name="Utilisateurs")
+     *
+     *
+     * @param UserRepository $userRepository
+     * @param SerializerInterface $serializer
+     * @return JsonResponse
+     */
     #[Route('/api/users', name: 'users', methods: ['GET'])]
     public function getUserList(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
@@ -30,6 +63,25 @@ class UserController extends AbstractController
         return new JsonResponse($jsonUserList, Response::HTTP_OK, [], true);
     }
 
+    /**
+     * Cette méthode permet de récupérer les informations d'un de vos utilisateurs.
+     *
+     * @OA\Response(
+     *     response=200,
+     *     description="Retourne les informations de l'utilisateur",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=User::class, groups={"getUsers"}))
+     *     )
+     * )
+     * @OA\Tag(name="Utilisateurs")
+     *
+     *
+     * @param User $user
+     * @param SerializerInterface $serializer
+     * @param ClientPropertyChecker $clientPropertyChecker
+     * @return JsonResponse
+     */
     #[Route('/api/users/{id}', name: 'detailUser', methods: ['GET'])]
     public function getDetailProduct(
         User $user,
@@ -44,6 +96,25 @@ class UserController extends AbstractController
         return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
     }
 
+    /**
+     * Cette méthode permet de supprimer un de vos utilisateurs.
+     *
+     * @OA\Response(
+     *     response=204,
+     *     description="Supprime un utilisateur",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=User::class, groups={"getUsers"}))
+     *     )
+     * )
+     * @OA\Tag(name="Utilisateurs")
+     *
+     *
+     * @param User $user
+     * @param EntityManagerInterface $entityManager
+     * @param ClientPropertyChecker $clientPropertyChecker
+     * @return JsonResponse
+     */
     #[Route('/api/users/{id}', name: 'deleteUser', methods: ['DELETE'])]
     public function deleteUser(
         User $user,
@@ -58,6 +129,39 @@ class UserController extends AbstractController
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
+    /**
+     * Cette méthode permet de créer un utilisateur.
+     *
+     * @OA\Response(
+     *     response=201,
+     *     description="Créer un utilisateur",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=User::class, groups={"getUsers"}))
+     *     )
+     * )
+     * @OA\Parameter(
+     *     name="username",
+     *     in="query",
+     *     description="Nom d'utilisateur",
+     *     @OA\Schema(type="string")
+     * )
+     * @OA\Parameter(
+     *     name="email",
+     *     in="query",
+     *     description="Adresse email",
+     *     @OA\Schema(type="string")
+     * )
+     * @OA\Tag(name="Utilisateurs")
+     *
+     *
+     * @param Request $request
+     * @param SerializerInterface $serializer
+     * @param EntityManagerInterface $entityManager
+     * @param UrlGeneratorInterface $urlGenerator
+     * @param ValidatorInterface $validator
+     * @return JsonResponse
+     */
     #[Route('/api/users', name: "createUser", methods: ['POST'])]
     public function createUser(
         Request $request,
@@ -89,6 +193,40 @@ class UserController extends AbstractController
         return new JsonResponse($jsonProduct, Response::HTTP_CREATED, ['Location' => $location], true);
     }
 
+    /**
+     * Cette méthode permet de mettre à jour un utilisateur.
+     *
+     * @OA\Response(
+     *     response=204,
+     *     description="Met à jour un utilisateur",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=User::class, groups={"getUsers"}))
+     *     )
+     * )
+     * @OA\Parameter(
+     *     name="username",
+     *     in="query",
+     *     description="Nom d'utilisateur",
+     *     @OA\Schema(type="string")
+     * )
+     * @OA\Parameter(
+     *     name="email",
+     *     in="query",
+     *     description="Adresse email",
+     *     @OA\Schema(type="string")
+     * )
+     * @OA\Tag(name="Utilisateurs")
+     *
+     *
+     * @param User $currentUser
+     * @param Request $request
+     * @param EntityManagerInterface $entityManager
+     * @param SerializerInterface $serializer
+     * @param ProductRepository $productRepository
+     * @param ValidatorInterface $validator
+     * @return JsonResponse
+     */
     #[Route('/api/users/{id}', name: 'updateUser', methods: ['PUT'])]
     public function updateProduct(
         User $currentUser,
