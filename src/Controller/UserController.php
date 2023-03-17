@@ -11,6 +11,7 @@ use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use OpenApi\Annotations as OA;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,6 +20,8 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 class UserController extends AbstractController
 {
@@ -33,32 +36,30 @@ class UserController extends AbstractController
      *        @OA\Items(ref=@Model(type=User::class, groups={"getUsers"}))
      *     )
      * )
-     * @OA\Parameter(
-     *     name="page",
-     *     in="query",
-     *     description="La page que l'on veut récupérer",
-     *     @OA\Schema(type="int")
-     * )
-     *
-     * @OA\Parameter(
-     *     name="limit",
-     *     in="query",
-     *     description="Le nombre d'éléments que l'on veut récupérer",
-     *     @OA\Schema(type="int")
-     * )
      * @OA\Tag(name="Utilisateurs")
      *
      *
      * @param UserRepository $userRepository
      * @param SerializerInterface $serializer
+     * @param TagAwareCacheInterface $cache
      * @return JsonResponse
+     * @throws InvalidArgumentException
      */
     #[Route('/api/users', name: 'users', methods: ['GET'])]
-    public function getUserList(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
-    {
-        $productList = $userRepository->findBy(['client' => $this->getUser()]);
-        $context = SerializationContext::create()->setGroups(['getUsers']);
-        $jsonUserList = $serializer->serialize($productList, 'json', $context);
+    public function getUserList(
+        UserRepository $userRepository,
+        SerializerInterface $serializer,
+        TagAwareCacheInterface $cache
+    ): JsonResponse {
+        $idCache = "getAllUsers";
+
+        $jsonUserList = $cache->get($idCache, function (ItemInterface $item) use ($userRepository, $serializer) {
+            $item->tag("usersCache");
+            $userList = $userRepository->findBy(['client' => $this->getUser()]);
+            $context = SerializationContext::create()->setGroups(['getUsers']);
+
+            return $serializer->serialize($userList, 'json', $context);
+        });
 
         return new JsonResponse($jsonUserList, Response::HTTP_OK, [], true);
     }
@@ -80,18 +81,27 @@ class UserController extends AbstractController
      * @param User $user
      * @param SerializerInterface $serializer
      * @param ClientPropertyChecker $clientPropertyChecker
+     * @param TagAwareCacheInterface $cache
      * @return JsonResponse
+     * @throws InvalidArgumentException
      */
     #[Route('/api/users/{id}', name: 'detailUser', methods: ['GET'])]
     public function getDetailProduct(
         User $user,
         SerializerInterface $serializer,
-        ClientPropertyChecker $clientPropertyChecker
+        ClientPropertyChecker $clientPropertyChecker,
+        TagAwareCacheInterface $cache
     ): JsonResponse {
         $clientPropertyChecker->control($user->getClient(), $this->getUser());
 
-        $context = SerializationContext::create()->setGroups(['getUsers']);
-        $jsonUser = $serializer->serialize($user, 'json', $context);
+        $idCache = "getUser-".$user->getId();
+
+        $jsonUser = $cache->get($idCache, function (ItemInterface $item) use ($user, $serializer) {
+            $item->tag("user".$user->getId()."Cache");
+            $context = SerializationContext::create()->setGroups(['getUsers']);
+
+            return $serializer->serialize($user, 'json', $context);
+        });
 
         return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
     }
@@ -113,15 +123,23 @@ class UserController extends AbstractController
      * @param User $user
      * @param EntityManagerInterface $entityManager
      * @param ClientPropertyChecker $clientPropertyChecker
+     * @param TagAwareCacheInterface $cachePool
      * @return JsonResponse
+     * @throws InvalidArgumentException
      */
     #[Route('/api/users/{id}', name: 'deleteUser', methods: ['DELETE'])]
     public function deleteUser(
         User $user,
         EntityManagerInterface $entityManager,
-        ClientPropertyChecker $clientPropertyChecker
+        ClientPropertyChecker $clientPropertyChecker,
+        TagAwareCacheInterface $cachePool
     ): JsonResponse {
         $clientPropertyChecker->control($user->getClient(), $this->getUser());
+
+        $cachePool->invalidateTags([
+            'usersCache',
+            'user'.$user->getId().'Cache',
+        ]);
 
         $entityManager->remove($user);
         $entityManager->flush();
@@ -160,7 +178,9 @@ class UserController extends AbstractController
      * @param EntityManagerInterface $entityManager
      * @param UrlGeneratorInterface $urlGenerator
      * @param ValidatorInterface $validator
+     * @param TagAwareCacheInterface $cachePool
      * @return JsonResponse
+     * @throws InvalidArgumentException
      */
     #[Route('/api/users', name: "createUser", methods: ['POST'])]
     public function createUser(
@@ -168,7 +188,8 @@ class UserController extends AbstractController
         SerializerInterface $serializer,
         EntityManagerInterface $entityManager,
         UrlGeneratorInterface $urlGenerator,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        TagAwareCacheInterface $cachePool
     ): JsonResponse {
         /** @var User $user */
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
@@ -177,6 +198,8 @@ class UserController extends AbstractController
         if ($errors->count() > 0) {
             throw new HttpException(JsonResponse::HTTP_BAD_REQUEST, $errors[0]->getMessage());
         }
+
+        $cachePool->invalidateTags(['usersCache']);
 
         $user->setClient($this->getUser());
         $entityManager->persist($user);
@@ -225,7 +248,9 @@ class UserController extends AbstractController
      * @param SerializerInterface $serializer
      * @param ProductRepository $productRepository
      * @param ValidatorInterface $validator
+     * @param TagAwareCacheInterface $cachePool
      * @return JsonResponse
+     * @throws InvalidArgumentException
      */
     #[Route('/api/users/{id}', name: 'updateUser', methods: ['PUT'])]
     public function updateProduct(
@@ -234,7 +259,8 @@ class UserController extends AbstractController
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
         ProductRepository $productRepository,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        TagAwareCacheInterface $cachePool
     ): JsonResponse {
         if ($currentUser->getClient() !== $this->getUser()) {
             return new JsonResponse(null, Response::HTTP_NOT_FOUND);
@@ -249,6 +275,11 @@ class UserController extends AbstractController
         if ($errors->count() > 0) {
             throw new HttpException(JsonResponse::HTTP_BAD_REQUEST, $errors[0]->getMessage());
         }
+
+        $cachePool->invalidateTags([
+            'usersCache',
+            'user'.$currentUser->getId().'Cache',
+        ]);
 
         $content = $request->toArray();
         $productsId = $content['productsId'] ?? -1;
