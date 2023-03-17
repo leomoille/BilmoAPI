@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Product;
-use App\Entity\User;
 use App\Repository\ProductRepository;
 use App\Repository\UserRepository;
 use App\Service\ClientPropertyChecker;
