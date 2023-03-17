@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Product;
+use App\Entity\User;
 use App\Repository\ProductRepository;
 use App\Repository\UserRepository;
 use App\Service\ClientPropertyChecker;
@@ -223,7 +224,10 @@ class ProductController extends AbstractController
      *     @OA\Schema(
      *         schema="ExampleResponse",
      *         type="array",
-     *         @OA\Items(ref=@Model(type=User::class)),
+     *         @OA\Items(
+     *             type="int",
+     *             @OA\Property(property="id", type="int")
+     *         )
      *     )
      * )
      * @OA\Tag(name="Products")
