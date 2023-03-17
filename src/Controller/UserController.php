@@ -158,17 +158,20 @@ class UserController extends AbstractController
      *        @OA\Items(ref=@Model(type=User::class, groups={"getUsers"}))
      *     )
      * )
-     * @OA\Parameter(
-     *     name="username",
-     *     in="query",
-     *     description="Nom d'utilisateur",
-     *     @OA\Schema(type="string")
-     * )
-     * @OA\Parameter(
-     *     name="email",
-     *     in="query",
-     *     description="Adresse email",
-     *     @OA\Schema(type="string")
+     * @OA\RequestBody(
+     *     @OA\JsonContent(
+     *         example={
+     *             "username": "username",
+     *             "email": "email@mail.com",
+     *             "productsId": {12, 85}
+     *         },
+     *         @OA\Schema (
+     *              type="object",
+     *              @OA\Property(property="username", required=false, description="Nom de l'utilisateur", type="string"),
+     *              @OA\Property(property="email", required=false, description="Email de l'utilisateur", type="string"),
+     *              @OA\Property(property="productsId", required=false, description="Liste des produits de l'utilisateur", type="array"),
+     *         )
+     *     )
      * )
      * @OA\Tag(name="Utilisateurs")
      *
@@ -227,17 +230,20 @@ class UserController extends AbstractController
      *        @OA\Items(ref=@Model(type=User::class, groups={"getUsers"}))
      *     )
      * )
-     * @OA\Parameter(
-     *     name="username",
-     *     in="query",
-     *     description="Nom d'utilisateur",
-     *     @OA\Schema(type="string")
-     * )
-     * @OA\Parameter(
-     *     name="email",
-     *     in="query",
-     *     description="Adresse email",
-     *     @OA\Schema(type="string")
+     * @OA\RequestBody(
+     *     @OA\JsonContent(
+     *         example={
+     *             "username": "username",
+     *             "email": "email@mail.com",
+     *             "productsId": {12, 85}
+     *         },
+     *         @OA\Schema (
+     *              type="object",
+     *              @OA\Property(property="username", required=false, description="Nom de l'utilisateur", type="string"),
+     *              @OA\Property(property="email", required=false, description="Email de l'utilisateur", type="string"),
+     *              @OA\Property(property="productsId", required=false, description="Liste des produits de l'utilisateur", type="array"),
+     *         )
+     *     )
      * )
      * @OA\Tag(name="Utilisateurs")
      *
