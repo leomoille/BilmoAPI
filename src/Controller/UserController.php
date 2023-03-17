@@ -11,6 +11,7 @@ use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use OpenApi\Annotations as OA;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -40,7 +41,9 @@ class UserController extends AbstractController
      *
      * @param UserRepository $userRepository
      * @param SerializerInterface $serializer
+     * @param TagAwareCacheInterface $cache
      * @return JsonResponse
+     * @throws InvalidArgumentException
      */
     #[Route('/api/users', name: 'users', methods: ['GET'])]
     public function getUserList(
@@ -78,7 +81,9 @@ class UserController extends AbstractController
      * @param User $user
      * @param SerializerInterface $serializer
      * @param ClientPropertyChecker $clientPropertyChecker
+     * @param TagAwareCacheInterface $cache
      * @return JsonResponse
+     * @throws InvalidArgumentException
      */
     #[Route('/api/users/{id}', name: 'detailUser', methods: ['GET'])]
     public function getDetailProduct(
@@ -118,7 +123,9 @@ class UserController extends AbstractController
      * @param User $user
      * @param EntityManagerInterface $entityManager
      * @param ClientPropertyChecker $clientPropertyChecker
+     * @param TagAwareCacheInterface $cachePool
      * @return JsonResponse
+     * @throws InvalidArgumentException
      */
     #[Route('/api/users/{id}', name: 'deleteUser', methods: ['DELETE'])]
     public function deleteUser(
@@ -171,7 +178,9 @@ class UserController extends AbstractController
      * @param EntityManagerInterface $entityManager
      * @param UrlGeneratorInterface $urlGenerator
      * @param ValidatorInterface $validator
+     * @param TagAwareCacheInterface $cachePool
      * @return JsonResponse
+     * @throws InvalidArgumentException
      */
     #[Route('/api/users', name: "createUser", methods: ['POST'])]
     public function createUser(
@@ -239,7 +248,9 @@ class UserController extends AbstractController
      * @param SerializerInterface $serializer
      * @param ProductRepository $productRepository
      * @param ValidatorInterface $validator
+     * @param TagAwareCacheInterface $cachePool
      * @return JsonResponse
+     * @throws InvalidArgumentException
      */
     #[Route('/api/users/{id}', name: 'updateUser', methods: ['PUT'])]
     public function updateProduct(
