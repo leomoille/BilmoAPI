@@ -11,6 +11,7 @@ use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use OpenApi\Annotations as OA;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,6 +20,8 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 class ProductController extends AbstractController
 {
@@ -38,14 +41,25 @@ class ProductController extends AbstractController
      *
      * @param ProductRepository $productRepository
      * @param SerializerInterface $serializer
+     * @param TagAwareCacheInterface $cache
      * @return JsonResponse
+     * @throws InvalidArgumentException
      */
     #[Route('/api/products', name: 'products', methods: ['GET'])]
-    public function getProductList(ProductRepository $productRepository, SerializerInterface $serializer): JsonResponse
-    {
-        $productList = $productRepository->findBy(['client' => $this->getUser()]);
-        $context = SerializationContext::create()->setGroups(['getProducts']);
-        $jsonProductList = $serializer->serialize($productList, 'json', $context);
+    public function getProductList(
+        ProductRepository $productRepository,
+        SerializerInterface $serializer,
+        TagAwareCacheInterface $cache
+    ): JsonResponse {
+        $idCache = "getAllProducts";
+
+        $jsonProductList = $cache->get($idCache, function (ItemInterface $item) use ($productRepository, $serializer) {
+            $item->tag("productsCache");
+            $productList = $productRepository->findBy(['client' => $this->getUser()]);
+            $context = SerializationContext::create()->setGroups(['getProducts']);
+
+            return $serializer->serialize($productList, 'json', $context);
+        });
 
         return new JsonResponse($jsonProductList, Response::HTTP_OK, [], true);
     }
@@ -73,12 +87,19 @@ class ProductController extends AbstractController
     public function getDetailProduct(
         Product $product,
         SerializerInterface $serializer,
-        ClientPropertyChecker $clientPropertyChecker
+        ClientPropertyChecker $clientPropertyChecker,
+        TagAwareCacheInterface $cache
     ): JsonResponse {
         $clientPropertyChecker->control($product->getClient(), $this->getUser());
 
-        $context = SerializationContext::create()->setGroups(['getProducts']);
-        $jsonProduct = $serializer->serialize($product, 'json', $context);
+        $idCache = "getProduct-".$product->getId();
+
+        $jsonProduct = $cache->get($idCache, function (ItemInterface $item) use ($product, $serializer) {
+            $item->tag("product".$product->getId()."Cache");
+            $context = SerializationContext::create()->setGroups(['getProducts']);
+
+            return $serializer->serialize($product, 'json', $context);
+        });
 
         return new JsonResponse($jsonProduct, Response::HTTP_OK, [], true);
     }
@@ -100,15 +121,23 @@ class ProductController extends AbstractController
      * @param Product $product
      * @param EntityManagerInterface $entityManager
      * @param ClientPropertyChecker $clientPropertyChecker
+     * @param TagAwareCacheInterface $cachePool
      * @return JsonResponse
+     * @throws InvalidArgumentException
      */
     #[Route('/api/products/{id}', name: 'deleteProduct', methods: ['DELETE'])]
     public function deleteProduct(
         Product $product,
         EntityManagerInterface $entityManager,
-        ClientPropertyChecker $clientPropertyChecker
+        ClientPropertyChecker $clientPropertyChecker,
+        TagAwareCacheInterface $cachePool
     ): JsonResponse {
         $clientPropertyChecker->control($product->getClient(), $this->getUser());
+
+        $cachePool->invalidateTags([
+            'productsCache',
+            'product'.$product->getId().'Cache',
+        ]);
 
         $entityManager->remove($product);
         $entityManager->flush();
@@ -147,7 +176,9 @@ class ProductController extends AbstractController
      * @param EntityManagerInterface $entityManager
      * @param UrlGeneratorInterface $urlGenerator
      * @param ValidatorInterface $validator
+     * @param TagAwareCacheInterface $cachePool
      * @return JsonResponse
+     * @throws InvalidArgumentException
      */
     #[Route('/api/products', name: "createProduct", methods: ['POST'])]
     public function createProduct(
@@ -155,7 +186,8 @@ class ProductController extends AbstractController
         SerializerInterface $serializer,
         EntityManagerInterface $entityManager,
         UrlGeneratorInterface $urlGenerator,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        TagAwareCacheInterface $cachePool
     ): JsonResponse {
         /** @var Product $product */
         $product = $serializer->deserialize($request->getContent(), Product::class, 'json');
@@ -164,6 +196,8 @@ class ProductController extends AbstractController
         if ($errors->count() > 0) {
             throw new HttpException(JsonResponse::HTTP_BAD_REQUEST, $errors[0]->getmessage());
         }
+
+        $cachePool->invalidateTags(['productsCache']);
 
         $product->setClient($this->getUser());
         $entityManager->persist($product);
@@ -225,7 +259,9 @@ class ProductController extends AbstractController
      * @param SerializerInterface $serializer
      * @param UserRepository $userRepository
      * @param ValidatorInterface $validator
+     * @param TagAwareCacheInterface $cachePool
      * @return JsonResponse
+     * @throws InvalidArgumentException
      */
     #[Route('/api/products/{id}', name: 'updateProduct', methods: ['PUT'])]
     public function updateProduct(
@@ -234,7 +270,8 @@ class ProductController extends AbstractController
         EntityManagerInterface $entityManager,
         SerializerInterface $serializer,
         UserRepository $userRepository,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        TagAwareCacheInterface $cachePool
     ): JsonResponse {
         if ($currentProduct->getClient() !== $this->getUser()) {
             return new JsonResponse(null, Response::HTTP_NOT_FOUND);
@@ -249,6 +286,11 @@ class ProductController extends AbstractController
         if ($errors->count() > 0) {
             throw new HttpException(JsonResponse::HTTP_BAD_REQUEST, $errors[0]->getMessage());
         }
+
+        $cachePool->invalidateTags([
+            'usersCache',
+            'user'.$currentProduct->getId().'Cache',
+        ]);
 
         $content = $request->toArray();
         $usersId = $content['usersId'] ?? -1;
