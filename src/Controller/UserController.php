@@ -161,16 +161,19 @@ class UserController extends AbstractController
      * @OA\RequestBody(
      *     @OA\JsonContent(
      *         example={
-     *             "username": "username",
-     *             "email": "email@mail.com",
-     *             "productsId": {12, 85}
+     *             "username": "johndoe",
+     *             "email": "john@doe.",
+     *             "usersId": {21, 58}
      *         },
-     *         @OA\Schema (
-     *              type="object",
-     *              @OA\Property(property="username", required=false, description="Nom de l'utilisateur", type="string"),
-     *              @OA\Property(property="email", required=false, description="Email de l'utilisateur", type="string"),
-     *              @OA\Property(property="productsId", required=false, description="Liste des produits de l'utilisateur", type="array"),
-     *         )
+     *         @OA\Property(property="name", description="Nom du produit", type="string"),
+     *         @OA\Property(property="price", description="Prix du produit", type="float"),
+     *         @OA\Property(property="usersId", description="Liste des utilisateurs possedant le produit",
+     *             type="array",
+     *             @OA\Items(
+     *                 type="int",
+     *                 format="id"
+     *             )
+     *         ),
      *     )
      * )
      * @OA\Tag(name="Utilisateurs")
@@ -237,12 +240,15 @@ class UserController extends AbstractController
      *             "email": "email@mail.com",
      *             "productsId": {12, 85}
      *         },
-     *         @OA\Schema (
-     *              type="object",
-     *              @OA\Property(property="username", required=false, description="Nom de l'utilisateur", type="string"),
-     *              @OA\Property(property="email", required=false, description="Email de l'utilisateur", type="string"),
-     *              @OA\Property(property="productsId", required=false, description="Liste des produits de l'utilisateur", type="array"),
-     *         )
+     *         @OA\Property(property="name", description="Nom du produit", type="string"),
+     *         @OA\Property(property="price", description="Prix du produit", type="float"),
+     *         @OA\Property(property="usersId", description="Liste des utilisateurs possedant le produit",
+     *             type="array",
+     *             @OA\Items(
+     *                 type="int",
+     *                 format="id"
+     *             )
+     *         ),
      *     )
      * )
      * @OA\Tag(name="Utilisateurs")

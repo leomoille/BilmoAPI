@@ -156,17 +156,23 @@ class ProductController extends AbstractController
      *        @OA\Items(ref=@Model(type=Product::class, groups={"getProducts"}))
      *     )
      * )
-     * @OA\Parameter(
-     *     name="name",
-     *     in="query",
-     *     description="Nom du produit",
-     *     @OA\Schema(type="string")
-     * )
-     * @OA\Parameter(
-     *     name="price",
-     *     in="query",
-     *     description="Prix du produit",
-     *     @OA\Schema(type="float")
+     * @OA\RequestBody(
+     *     @OA\JsonContent(
+     *         example={
+     *             "name": "Super smartphone",
+     *             "price": 559.99,
+     *             "usersId": {21, 58}
+     *         },
+     *         @OA\Property(property="name", description="Nom du produit", type="string"),
+     *         @OA\Property(property="price", description="Prix du produit", type="float"),
+     *         @OA\Property(property="usersId", description="Liste des utilisateurs possedant le produit",
+     *             type="array",
+     *             @OA\Items(
+     *                 type="int",
+     *                 format="id"
+     *             )
+     *         ),
+     *     )
      * )
      * @OA\Tag(name="Produits")
      *
@@ -225,29 +231,22 @@ class ProductController extends AbstractController
      *        @OA\Items(ref=@Model(type=Product::class, groups={"getProducts"}))
      *     )
      * )
-     * @OA\Parameter(
-     *     name="name",
-     *     in="query",
-     *     description="Nom du produit",
-     *     @OA\Schema(type="string")
-     * )
-     * @OA\Parameter(
-     *     name="price",
-     *     in="query",
-     *     description="Prix du produit",
-     *     @OA\Schema(type="float")
-     * )
-     * @OA\Parameter(
-     *     name="usersId",
-     *     in="query",
-     *     description="Liste des id utilisateurs",
-     *     @OA\Schema(
-     *         schema="ExampleResponse",
-     *         type="array",
-     *         @OA\Items(
-     *             type="int",
-     *             @OA\Property(property="id", type="int")
-     *         )
+     * @OA\RequestBody(
+     *     @OA\JsonContent(
+     *         example={
+     *             "name": "Super smartphone",
+     *             "price": 559.99,
+     *             "usersId": {21, 58}
+     *         },
+     *         @OA\Property(property="name", description="Nom du produit", type="string"),
+     *         @OA\Property(property="price", description="Prix du produit", type="float"),
+     *         @OA\Property(property="usersId", description="Liste des utilisateurs possedant le produit",
+     *             type="array",
+     *             @OA\Items(
+     *                 type="int",
+     *                 format="id"
+     *             )
+     *         ),
      *     )
      * )
      * @OA\Tag(name="Produits")
