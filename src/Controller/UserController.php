@@ -158,17 +158,23 @@ class UserController extends AbstractController
      *        @OA\Items(ref=@Model(type=User::class, groups={"getUsers"}))
      *     )
      * )
-     * @OA\Parameter(
-     *     name="username",
-     *     in="query",
-     *     description="Nom d'utilisateur",
-     *     @OA\Schema(type="string")
-     * )
-     * @OA\Parameter(
-     *     name="email",
-     *     in="query",
-     *     description="Adresse email",
-     *     @OA\Schema(type="string")
+     * @OA\RequestBody(
+     *     @OA\JsonContent(
+     *         example={
+     *             "username": "johndoe",
+     *             "email": "john@doe.",
+     *             "usersId": {21, 58}
+     *         },
+     *         @OA\Property(property="name", description="Nom du produit", type="string"),
+     *         @OA\Property(property="price", description="Prix du produit", type="float"),
+     *         @OA\Property(property="usersId", description="Liste des utilisateurs possedant le produit",
+     *             type="array",
+     *             @OA\Items(
+     *                 type="int",
+     *                 format="id"
+     *             )
+     *         ),
+     *     )
      * )
      * @OA\Tag(name="Utilisateurs")
      *
@@ -227,17 +233,23 @@ class UserController extends AbstractController
      *        @OA\Items(ref=@Model(type=User::class, groups={"getUsers"}))
      *     )
      * )
-     * @OA\Parameter(
-     *     name="username",
-     *     in="query",
-     *     description="Nom d'utilisateur",
-     *     @OA\Schema(type="string")
-     * )
-     * @OA\Parameter(
-     *     name="email",
-     *     in="query",
-     *     description="Adresse email",
-     *     @OA\Schema(type="string")
+     * @OA\RequestBody(
+     *     @OA\JsonContent(
+     *         example={
+     *             "username": "username",
+     *             "email": "email@mail.com",
+     *             "productsId": {12, 85}
+     *         },
+     *         @OA\Property(property="name", description="Nom du produit", type="string"),
+     *         @OA\Property(property="price", description="Prix du produit", type="float"),
+     *         @OA\Property(property="usersId", description="Liste des utilisateurs possedant le produit",
+     *             type="array",
+     *             @OA\Items(
+     *                 type="int",
+     *                 format="id"
+     *             )
+     *         ),
+     *     )
      * )
      * @OA\Tag(name="Utilisateurs")
      *
@@ -260,16 +272,19 @@ class UserController extends AbstractController
         SerializerInterface $serializer,
         ProductRepository $productRepository,
         ValidatorInterface $validator,
-        TagAwareCacheInterface $cachePool
+        TagAwareCacheInterface $cachePool,
+        ClientPropertyChecker $clientPropertyChecker,
     ): JsonResponse {
-        if ($currentUser->getClient() !== $this->getUser()) {
-            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
-        }
+        $clientPropertyChecker->control($currentUser->getClient(), $this->getUser());
 
         /** @var User $newUser */
         $newUser = $serializer->deserialize($request->getContent(), User::class, 'json');
-            !$currentUser->getEmail() ?? $currentUser->setEmail($newUser->getEmail()());
-            !$currentUser->getUsername() ?? $currentUser->setUsername($newUser->getUsername());
+        if ($newUser->getEmail()) {
+            $currentUser->setEmail($newUser->getEmail()());
+        }
+        if ($newUser->getUsername()) {
+            $currentUser->setUsername($newUser->getUsername());
+        }
 
         $errors = $validator->validate($currentUser);
         if ($errors->count() > 0) {
@@ -285,6 +300,7 @@ class UserController extends AbstractController
         $productsId = $content['productsId'] ?? -1;
         $addedProducts = $productRepository->findBy(['id' => $productsId]) ?? null;
 
+        // FIXME: Ne permet pas la suppression d'un produit de la liste
         if ($productsId) {
             for ($i = 0; $i < count($addedProducts); $i++) {
                 $currentUser->addProduct($addedProducts[$i]);

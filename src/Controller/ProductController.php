@@ -156,17 +156,23 @@ class ProductController extends AbstractController
      *        @OA\Items(ref=@Model(type=Product::class, groups={"getProducts"}))
      *     )
      * )
-     * @OA\Parameter(
-     *     name="name",
-     *     in="query",
-     *     description="Nom du produit",
-     *     @OA\Schema(type="string")
-     * )
-     * @OA\Parameter(
-     *     name="price",
-     *     in="query",
-     *     description="Prix du produit",
-     *     @OA\Schema(type="float")
+     * @OA\RequestBody(
+     *     @OA\JsonContent(
+     *         example={
+     *             "name": "Super smartphone",
+     *             "price": 559.99,
+     *             "usersId": {21, 58}
+     *         },
+     *         @OA\Property(property="name", description="Nom du produit", type="string"),
+     *         @OA\Property(property="price", description="Prix du produit", type="float"),
+     *         @OA\Property(property="usersId", description="Liste des utilisateurs possedant le produit",
+     *             type="array",
+     *             @OA\Items(
+     *                 type="int",
+     *                 format="id"
+     *             )
+     *         ),
+     *     )
      * )
      * @OA\Tag(name="Produits")
      *
@@ -225,29 +231,22 @@ class ProductController extends AbstractController
      *        @OA\Items(ref=@Model(type=Product::class, groups={"getProducts"}))
      *     )
      * )
-     * @OA\Parameter(
-     *     name="name",
-     *     in="query",
-     *     description="Nom du produit",
-     *     @OA\Schema(type="string")
-     * )
-     * @OA\Parameter(
-     *     name="price",
-     *     in="query",
-     *     description="Prix du produit",
-     *     @OA\Schema(type="float")
-     * )
-     * @OA\Parameter(
-     *     name="usersId",
-     *     in="query",
-     *     description="Liste des id utilisateurs",
-     *     @OA\Schema(
-     *         schema="ExampleResponse",
-     *         type="array",
-     *         @OA\Items(
-     *             type="int",
-     *             @OA\Property(property="id", type="int")
-     *         )
+     * @OA\RequestBody(
+     *     @OA\JsonContent(
+     *         example={
+     *             "name": "Super smartphone",
+     *             "price": 559.99,
+     *             "usersId": {21, 58}
+     *         },
+     *         @OA\Property(property="name", description="Nom du produit", type="string"),
+     *         @OA\Property(property="price", description="Prix du produit", type="float"),
+     *         @OA\Property(property="usersId", description="Liste des utilisateurs possedant le produit",
+     *             type="array",
+     *             @OA\Items(
+     *                 type="int",
+     *                 format="id"
+     *             )
+     *         ),
      *     )
      * )
      * @OA\Tag(name="Produits")
@@ -271,16 +270,19 @@ class ProductController extends AbstractController
         SerializerInterface $serializer,
         UserRepository $userRepository,
         ValidatorInterface $validator,
-        TagAwareCacheInterface $cachePool
+        TagAwareCacheInterface $cachePool,
+        ClientPropertyChecker $clientPropertyChecker,
     ): JsonResponse {
-        if ($currentProduct->getClient() !== $this->getUser()) {
-            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
-        }
+        $clientPropertyChecker->control($currentProduct->getClient(), $this->getUser());
 
         /** @var Product $newProduct */
         $newProduct = $serializer->deserialize($request->getContent(), Product::class, 'json');
-            !$currentProduct->getName() ?? $currentProduct->setName($newProduct->getName());
-            !$currentProduct->getPrice() ?? $currentProduct->setPrice($newProduct->getPrice());
+        if ($newProduct->getName()) {
+            $currentProduct->setName($newProduct->getName());
+        }
+        if ($newProduct->getPrice()) {
+            $currentProduct->setPrice($newProduct->getPrice());
+        }
 
         $errors = $validator->validate($currentProduct);
         if ($errors->count() > 0) {
@@ -288,14 +290,15 @@ class ProductController extends AbstractController
         }
 
         $cachePool->invalidateTags([
-            'usersCache',
-            'user'.$currentProduct->getId().'Cache',
+            'productsCache',
+            'product'.$currentProduct->getId().'Cache',
         ]);
 
         $content = $request->toArray();
         $usersId = $content['usersId'] ?? -1;
         $newUsers = $userRepository->findBy(['id' => $usersId]) ?? null;
 
+        // FIXME: Ne permet pas la suppression d'un utilisateur de la liste
         if ($usersId) {
             for ($i = 0; $i < count($newUsers); $i++) {
                 $currentProduct->addUser($newUsers[$i]);
