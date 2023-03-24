@@ -300,6 +300,7 @@ class UserController extends AbstractController
         $productsId = $content['productsId'] ?? -1;
         $addedProducts = $productRepository->findBy(['id' => $productsId]) ?? null;
 
+        // FIXME: Ne permet pas la suppression d'un produit de la liste
         if ($productsId) {
             for ($i = 0; $i < count($addedProducts); $i++) {
                 $currentUser->addProduct($addedProducts[$i]);
