@@ -272,11 +272,10 @@ class UserController extends AbstractController
         SerializerInterface $serializer,
         ProductRepository $productRepository,
         ValidatorInterface $validator,
-        TagAwareCacheInterface $cachePool
+        TagAwareCacheInterface $cachePool,
+        ClientPropertyChecker $clientPropertyChecker,
     ): JsonResponse {
-        if ($currentUser->getClient() !== $this->getUser()) {
-            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
-        }
+        $clientPropertyChecker->control($currentUser->getClient(), $this->getUser());
 
         /** @var User $newUser */
         $newUser = $serializer->deserialize($request->getContent(), User::class, 'json');

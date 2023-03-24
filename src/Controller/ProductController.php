@@ -270,11 +270,10 @@ class ProductController extends AbstractController
         SerializerInterface $serializer,
         UserRepository $userRepository,
         ValidatorInterface $validator,
-        TagAwareCacheInterface $cachePool
+        TagAwareCacheInterface $cachePool,
+        ClientPropertyChecker $clientPropertyChecker,
     ): JsonResponse {
-        if ($currentProduct->getClient() !== $this->getUser()) {
-            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
-        }
+        $clientPropertyChecker->control($currentProduct->getClient(), $this->getUser());
 
         /** @var Product $newProduct */
         $newProduct = $serializer->deserialize($request->getContent(), Product::class, 'json');
