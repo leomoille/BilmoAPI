@@ -290,8 +290,8 @@ class ProductController extends AbstractController
         }
 
         $cachePool->invalidateTags([
-            'usersCache',
-            'user'.$currentProduct->getId().'Cache',
+            'productsCache',
+            'product'.$currentProduct->getId().'Cache',
         ]);
 
         $content = $request->toArray();

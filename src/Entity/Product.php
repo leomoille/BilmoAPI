@@ -96,14 +96,14 @@ class Product
         return $this;
     }
 
-    public function getPrice(): ?float
+    public function getPrice(): ?int
     {
-        return $this->price / 100;
+        return $this->price;
     }
 
     public function setPrice(int $price): self
     {
-        $this->price = $price * 100;
+        $this->price = $price;
 
         return $this;
     }
