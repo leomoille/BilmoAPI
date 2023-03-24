@@ -81,7 +81,9 @@ class ProductController extends AbstractController
      * @param Product $product
      * @param SerializerInterface $serializer
      * @param ClientPropertyChecker $clientPropertyChecker
+     * @param TagAwareCacheInterface $cache
      * @return JsonResponse
+     * @throws InvalidArgumentException
      */
     #[Route('/api/products/{id}', name: 'detailProduct', methods: ['GET'])]
     public function getDetailProduct(
@@ -259,6 +261,7 @@ class ProductController extends AbstractController
      * @param UserRepository $userRepository
      * @param ValidatorInterface $validator
      * @param TagAwareCacheInterface $cachePool
+     * @param ClientPropertyChecker $clientPropertyChecker
      * @return JsonResponse
      * @throws InvalidArgumentException
      */
@@ -282,6 +285,9 @@ class ProductController extends AbstractController
         }
         if ($newProduct->getPrice()) {
             $currentProduct->setPrice($newProduct->getPrice());
+        }
+        if ($newProduct->getBrand()) {
+            $currentProduct->setBrand($newProduct->getBrand());
         }
 
         $errors = $validator->validate($currentProduct);

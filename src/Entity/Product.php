@@ -74,6 +74,18 @@ class Product
     #[ORM\ManyToOne(inversedBy: 'products')]
     private ?Client $client = null;
 
+    #[ORM\Column(length: 255)]
+    #[Groups(["getProducts", "getUsers"])]
+    #[Assert\Type('string', message: "La valeur {{ value }} n'est pas un {{ type }} valide")]
+    #[Assert\Length(
+        min: 1,
+        max: 255,
+        minMessage: "La marque du produit doit faire au moins {{ limit }} caractères",
+        maxMessage: "La marque du produit ne peut pas faire plus de {{ limit }} caractères"
+    )]
+    #[Assert\NotBlank(message: "Le produit doit avoir une marque")]
+    private ?string $brand = null;
+
     public function __construct()
     {
         $this->users = new ArrayCollection();
@@ -143,6 +155,18 @@ class Product
     public function setClient(?Client $client): self
     {
         $this->client = $client;
+
+        return $this;
+    }
+
+    public function getBrand(): ?string
+    {
+        return $this->brand;
+    }
+
+    public function setBrand(string $brand): self
+    {
+        $this->brand = $brand;
 
         return $this;
     }
