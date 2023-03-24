@@ -1,0 +1,13 @@
+version: '2'
+plugins:
+    php_codesniffer:
+        enabled: true
+        standard: PSR12
+    php_mess_detector:
+        enabled: true
+        ruleset: cleancode, codesize, design, naming, unusedcode
+exclude_paths:
+    - vendor/
+    - web/bundles/
+    - app/cache/
+    - app/logs/
