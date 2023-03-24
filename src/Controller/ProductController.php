@@ -278,8 +278,12 @@ class ProductController extends AbstractController
 
         /** @var Product $newProduct */
         $newProduct = $serializer->deserialize($request->getContent(), Product::class, 'json');
-            !$currentProduct->getName() ?? $currentProduct->setName($newProduct->getName());
-            !$currentProduct->getPrice() ?? $currentProduct->setPrice($newProduct->getPrice());
+        if ($newProduct->getName()) {
+            $currentProduct->setName($newProduct->getName());
+        }
+        if ($newProduct->getPrice()) {
+            $currentProduct->setPrice($newProduct->getPrice());
+        }
 
         $errors = $validator->validate($currentProduct);
         if ($errors->count() > 0) {

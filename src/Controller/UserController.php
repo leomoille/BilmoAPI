@@ -280,8 +280,12 @@ class UserController extends AbstractController
 
         /** @var User $newUser */
         $newUser = $serializer->deserialize($request->getContent(), User::class, 'json');
-            !$currentUser->getEmail() ?? $currentUser->setEmail($newUser->getEmail()());
-            !$currentUser->getUsername() ?? $currentUser->setUsername($newUser->getUsername());
+        if ($newUser->getEmail()) {
+            $currentUser->setEmail($newUser->getEmail()());
+        }
+        if ($newUser->getUsername()) {
+            $currentUser->setUsername($newUser->getUsername());
+        }
 
         $errors = $validator->validate($currentUser);
         if ($errors->count() > 0) {
