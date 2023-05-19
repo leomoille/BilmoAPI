@@ -31,7 +31,7 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
 
     public function load(ObjectManager $manager)
     {
-        for ($i = 0; $i < count(self::USER_REFERENCE); $i++) {
+        for ($i = 0; $i < count(self::USER_REFERENCE); ++$i) {
             $user = new User();
             $user
                 ->setUsername('utilisateur '.$i)

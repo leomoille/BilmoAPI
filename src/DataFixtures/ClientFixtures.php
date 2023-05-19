@@ -17,7 +17,7 @@ class ClientFixtures extends Fixture
         $this->userPasswordHasher = $userPasswordHasher;
     }
 
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
         $client = new Client();
         $client

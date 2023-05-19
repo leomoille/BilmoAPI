@@ -31,18 +31,16 @@ class ProductController extends AbstractController
      * @OA\Response(
      *     response=200,
      *     description="Retourne la liste des produits",
+     *
      *     @OA\JsonContent(
      *        type="array",
+     *
      *        @OA\Items(ref=@Model(type=Product::class, groups={"getProducts"}))
      *     )
      * )
+     *
      * @OA\Tag(name="Produits")
      *
-     *
-     * @param ProductRepository $productRepository
-     * @param SerializerInterface $serializer
-     * @param TagAwareCacheInterface $cache
-     * @return JsonResponse
      * @throws InvalidArgumentException
      */
     #[Route('/api/products', name: 'products', methods: ['GET'])]
@@ -51,10 +49,10 @@ class ProductController extends AbstractController
         SerializerInterface $serializer,
         TagAwareCacheInterface $cache
     ): JsonResponse {
-        $idCache = "getAllProducts";
+        $idCache = 'getAllProducts';
 
         $jsonProductList = $cache->get($idCache, function (ItemInterface $item) use ($productRepository, $serializer) {
-            $item->tag("productsCache");
+            $item->tag('productsCache');
             $productList = $productRepository->findBy(['client' => $this->getUser()]);
             $context = SerializationContext::create()->setGroups(['getProducts']);
 
@@ -70,19 +68,16 @@ class ProductController extends AbstractController
      * @OA\Response(
      *     response=200,
      *     description="Retourne les informations du produit",
+     *
      *     @OA\JsonContent(
      *        type="array",
+     *
      *        @OA\Items(ref=@Model(type=Product::class, groups={"getProducts"}))
      *     )
      * )
+     *
      * @OA\Tag(name="Produits")
      *
-     *
-     * @param Product $product
-     * @param SerializerInterface $serializer
-     * @param ClientPropertyChecker $clientPropertyChecker
-     * @param TagAwareCacheInterface $cache
-     * @return JsonResponse
      * @throws InvalidArgumentException
      */
     #[Route('/api/products/{id}', name: 'detailProduct', methods: ['GET'])]
@@ -94,10 +89,10 @@ class ProductController extends AbstractController
     ): JsonResponse {
         $clientPropertyChecker->control($product->getClient(), $this->getUser());
 
-        $idCache = "getProduct-".$product->getId();
+        $idCache = 'getProduct-'.$product->getId();
 
         $jsonProduct = $cache->get($idCache, function (ItemInterface $item) use ($product, $serializer) {
-            $item->tag("product".$product->getId()."Cache");
+            $item->tag('product'.$product->getId().'Cache');
             $context = SerializationContext::create()->setGroups(['getProducts']);
 
             return $serializer->serialize($product, 'json', $context);
@@ -112,19 +107,16 @@ class ProductController extends AbstractController
      * @OA\Response(
      *     response=204,
      *     description="Supprime un produit",
+     *
      *     @OA\JsonContent(
      *        type="array",
+     *
      *        @OA\Items(ref=@Model(type=Product::class, groups={"getProducts"}))
      *     )
      * )
+     *
      * @OA\Tag(name="Produits")
      *
-     *
-     * @param Product $product
-     * @param EntityManagerInterface $entityManager
-     * @param ClientPropertyChecker $clientPropertyChecker
-     * @param TagAwareCacheInterface $cachePool
-     * @return JsonResponse
      * @throws InvalidArgumentException
      */
     #[Route('/api/products/{id}', name: 'deleteProduct', methods: ['DELETE'])]
@@ -153,22 +145,28 @@ class ProductController extends AbstractController
      * @OA\Response(
      *     response=201,
      *     description="Créer un produit",
+     *
      *     @OA\JsonContent(
      *        type="array",
+     *
      *        @OA\Items(ref=@Model(type=Product::class, groups={"getProducts"}))
      *     )
      * )
+     *
      * @OA\RequestBody(
+     *
      *     @OA\JsonContent(
      *         example={
      *             "name": "Super smartphone",
      *             "price": 559.99,
      *             "usersId": {21, 58}
      *         },
+     *
      *         @OA\Property(property="name", description="Nom du produit", type="string"),
      *         @OA\Property(property="price", description="Prix du produit", type="float"),
      *         @OA\Property(property="usersId", description="Liste des utilisateurs possedant le produit",
      *             type="array",
+     *
      *             @OA\Items(
      *                 type="int",
      *                 format="id"
@@ -176,19 +174,12 @@ class ProductController extends AbstractController
      *         ),
      *     )
      * )
+     *
      * @OA\Tag(name="Produits")
      *
-     *
-     * @param Request $request
-     * @param SerializerInterface $serializer
-     * @param EntityManagerInterface $entityManager
-     * @param UrlGeneratorInterface $urlGenerator
-     * @param ValidatorInterface $validator
-     * @param TagAwareCacheInterface $cachePool
-     * @return JsonResponse
      * @throws InvalidArgumentException
      */
-    #[Route('/api/products', name: "createProduct", methods: ['POST'])]
+    #[Route('/api/products', name: 'createProduct', methods: ['POST'])]
     public function createProduct(
         Request $request,
         SerializerInterface $serializer,
@@ -228,22 +219,28 @@ class ProductController extends AbstractController
      * @OA\Response(
      *     response=204,
      *     description="Met à jour un produit",
+     *
      *     @OA\JsonContent(
      *        type="array",
+     *
      *        @OA\Items(ref=@Model(type=Product::class, groups={"getProducts"}))
      *     )
      * )
+     *
      * @OA\RequestBody(
+     *
      *     @OA\JsonContent(
      *         example={
      *             "name": "Super smartphone",
      *             "price": 559.99,
      *             "usersId": {21, 58}
      *         },
+     *
      *         @OA\Property(property="name", description="Nom du produit", type="string"),
      *         @OA\Property(property="price", description="Prix du produit", type="float"),
      *         @OA\Property(property="usersId", description="Liste des utilisateurs possedant le produit",
      *             type="array",
+     *
      *             @OA\Items(
      *                 type="int",
      *                 format="id"
@@ -251,18 +248,9 @@ class ProductController extends AbstractController
      *         ),
      *     )
      * )
+     *
      * @OA\Tag(name="Produits")
      *
-     *
-     * @param Product $currentProduct
-     * @param Request $request
-     * @param EntityManagerInterface $entityManager
-     * @param SerializerInterface $serializer
-     * @param UserRepository $userRepository
-     * @param ValidatorInterface $validator
-     * @param TagAwareCacheInterface $cachePool
-     * @param ClientPropertyChecker $clientPropertyChecker
-     * @return JsonResponse
      * @throws InvalidArgumentException
      */
     #[Route('/api/products/{id}', name: 'updateProduct', methods: ['PUT'])]
@@ -306,7 +294,7 @@ class ProductController extends AbstractController
 
         // FIXME: Ne permet pas la suppression d'un utilisateur de la liste
         if ($usersId) {
-            for ($i = 0; $i < count($newUsers); $i++) {
+            for ($i = 0; $i < count($newUsers); ++$i) {
                 $currentProduct->addUser($newUsers[$i]);
             }
         }
