@@ -22,25 +22,31 @@ Création de la base de données :
 
 ```shell
 symfony console doctrine:database:create
-# OU
-php bin/console doctrine:database:create
 ```
 
 Exécution des migrations :
 
 ```shell
 symfony console doctrine:migrations:migrate
-# OU
-php bin/console doctrine:migrations:migrate
 ```
 
 Exécution des fixtures pour charger le jeu de données de test :
 
 ```shell
 symfony console doctrine:fixtures:load
-# OU
-php bin/console doctrine:fixtures:load
 ```
+
+Lancement du serveur :
+
+```shell
+symfony server:start
+```
+
+Une fois le serveur lancé, vous pouvez accéder à la documentation de l'API via l'URL :
+
+**127.0.0.1:8000/api/doc**
+
+*Le port peut varier en fonction des disponibilités sur votre machine.*
 
 ## Nettoyage du cache
 
@@ -50,5 +56,5 @@ données ajoutées ou modifiées.
 Vous pouvez cependant vider manuellement le cache :
 
 ```shell
-php bin/console cache:clear
+symfony console cache:clear
 ```
