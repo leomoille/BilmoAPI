@@ -55,6 +55,14 @@ Vous pouvez obtenir un token d'authentification en utilisant les identifiants su
 Adresse email : **client@smart.phone**  
 Mot de passe : **client**
 
+Une fois votre token obtenu, vous pouvez l'utiliser en en-tête de reqête sous cette forme :
+
+`Authorization: bearer votre_token`
+
+Ou directement dans la partie "Authorize" de la documentation sous cette forme :
+
+`bearer votre_token`
+
 ## Nettoyage du cache
 
 Bilmo met automatiquement en cache les données pour des raisons de performance. Le cache est actualisé en fonction des
