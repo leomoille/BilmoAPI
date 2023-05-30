@@ -19,7 +19,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *      ),
  *      exclusion = @Hateoas\Exclusion(groups="getUsers")
  * )
- *
  * @Hateoas\Relation(
  *      "delete",
  *      href = @Hateoas\Route(
@@ -28,7 +27,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *      ),
  *      exclusion = @Hateoas\Exclusion(groups="getUsers")
  * )
- *
  * @Hateoas\Relation(
  *      "update",
  *      href = @Hateoas\Route(
@@ -37,7 +35,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *      ),
  *      exclusion = @Hateoas\Exclusion(groups="getUsers")
  * )
- *
  */
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User
@@ -45,11 +42,11 @@ class User
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getProducts", "getUsers"])]
+    #[Groups(['getProducts', 'getUsers'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getProducts", "getUsers"])]
+    #[Groups(['getProducts', 'getUsers'])]
     #[Assert\NotBlank(message: "L'utilisateur doit avoir un nom")]
     #[Assert\Length(
         min: 1,
@@ -60,7 +57,7 @@ class User
     private ?string $username = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getProducts", "getUsers"])]
+    #[Groups(['getProducts', 'getUsers'])]
     #[Assert\NotBlank(message: "L'utilisateur doit avoir un email")]
     #[Assert\Email(message: "L'email {{ value }} n'est pas un email valide")]
     #[Assert\Length(
@@ -72,7 +69,7 @@ class User
     private ?string $email = null;
 
     #[ORM\ManyToMany(targetEntity: Product::class, inversedBy: 'users', cascade: ['persist'])]
-    #[Groups(["getUsers"])]
+    #[Groups(['getUsers'])]
     private Collection $products;
 
     #[ORM\ManyToOne(inversedBy: 'users')]

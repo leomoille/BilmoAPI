@@ -19,7 +19,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *      ),
  *      exclusion = @Hateoas\Exclusion(groups="getProducts")
  * )
- *
  * @Hateoas\Relation(
  *      "delete",
  *      href = @Hateoas\Route(
@@ -28,7 +27,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *      ),
  *      exclusion = @Hateoas\Exclusion(groups="getProducts")
  * )
- *
  * @Hateoas\Relation(
  *      "update",
  *      href = @Hateoas\Route(
@@ -37,7 +35,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *      ),
  *      exclusion = @Hateoas\Exclusion(groups="getProducts")
  * )
- *
  */
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 class Product
@@ -45,45 +42,45 @@ class Product
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getProducts", "getUsers"])]
+    #[Groups(['getProducts', 'getUsers'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getProducts", "getUsers"])]
-    #[Assert\NotBlank(message: "Le produit doit avoir un nom")]
+    #[Groups(['getProducts', 'getUsers'])]
+    #[Assert\NotBlank(message: 'Le produit doit avoir un nom')]
     #[Assert\Type('string', message: "La valeur {{ value }} n'est pas un {{ type }} valide")]
     #[Assert\Length(
         min: 1,
         max: 255,
-        minMessage: "Le nom du produit doit faire au moins {{ limit }} caractères",
-        maxMessage: "Le nom du produit ne peut pas faire plus de {{ limit }} caractères"
+        minMessage: 'Le nom du produit doit faire au moins {{ limit }} caractères',
+        maxMessage: 'Le nom du produit ne peut pas faire plus de {{ limit }} caractères'
     )]
     private ?string $name = null;
 
     #[ORM\Column]
-    #[Groups(["getProducts", "getUsers"])]
-    #[Assert\NotBlank(message: "Le produit doit avoir un prix")]
-    #[Assert\Positive(message: "Le prix ne peut pas être négatif ou égale à 0")]
+    #[Groups(['getProducts', 'getUsers'])]
+    #[Assert\NotBlank(message: 'Le produit doit avoir un prix')]
+    #[Assert\Positive(message: 'Le prix ne peut pas être négatif ou égale à 0')]
     #[Assert\Type('int', message: "La valeur {{ value }} n'est pas un {{ type }} valide")]
     private ?int $price = null;
 
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'products', cascade: ['persist'])]
-    #[Groups(["getProducts"])]
+    #[Groups(['getProducts'])]
     private Collection $users;
 
     #[ORM\ManyToOne(inversedBy: 'products')]
     private ?Client $client = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getProducts", "getUsers"])]
+    #[Groups(['getProducts', 'getUsers'])]
     #[Assert\Type('string', message: "La valeur {{ value }} n'est pas un {{ type }} valide")]
     #[Assert\Length(
         min: 1,
         max: 255,
-        minMessage: "La marque du produit doit faire au moins {{ limit }} caractères",
-        maxMessage: "La marque du produit ne peut pas faire plus de {{ limit }} caractères"
+        minMessage: 'La marque du produit doit faire au moins {{ limit }} caractères',
+        maxMessage: 'La marque du produit ne peut pas faire plus de {{ limit }} caractères'
     )]
-    #[Assert\NotBlank(message: "Le produit doit avoir une marque")]
+    #[Assert\NotBlank(message: 'Le produit doit avoir une marque')]
     private ?string $brand = null;
 
     public function __construct()
