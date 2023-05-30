@@ -158,12 +158,14 @@ class ProductController extends AbstractController
      *     @OA\JsonContent(
      *         example={
      *             "name": "Super smartphone",
+     *             "brand": "iPhone",
      *             "price": 559.99,
      *             "usersId": {21, 58}
      *         },
      *
      *         @OA\Property(property="name", description="Nom du produit", type="string"),
      *         @OA\Property(property="price", description="Prix du produit", type="float"),
+     *         @OA\Property(property="brand", description="Marque du produit", type="string"),
      *         @OA\Property(property="usersId", description="Liste des utilisateurs possedant le produit",
      *             type="array",
      *
@@ -232,12 +234,14 @@ class ProductController extends AbstractController
      *     @OA\JsonContent(
      *         example={
      *             "name": "Super smartphone",
+     *             "brand": "iPhone",
      *             "price": 559.99,
      *             "usersId": {21, 58}
      *         },
      *
      *         @OA\Property(property="name", description="Nom du produit", type="string"),
      *         @OA\Property(property="price", description="Prix du produit", type="float"),
+     *         @OA\Property(property="brand", description="Marque du produit", type="string"),
      *         @OA\Property(property="usersId", description="Liste des utilisateurs possedant le produit",
      *             type="array",
      *
@@ -292,7 +296,6 @@ class ProductController extends AbstractController
         $usersId = $content['usersId'] ?? -1;
         $newUsers = $userRepository->findBy(['id' => $usersId]) ?? null;
 
-        // FIXME: Ne permet pas la suppression d'un utilisateur de la liste
         if ($usersId) {
             for ($i = 0; $i < count($newUsers); ++$i) {
                 $currentProduct->addUser($newUsers[$i]);
