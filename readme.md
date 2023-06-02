@@ -2,73 +2,78 @@
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/e646c7d531f9c1abb08a/maintainability)](https://codeclimate.com/github/leomoille/bilemo/maintainability)
 
-API permettant aux clients de BileMo de gérer leurs clients et produits.
+API allowing BileMo clients to manage their customers and products.
 
-## Installation
+## Local Project Installation
 
-Mettez à jour les paramètres de connexion à la base de données dans le fichier `.env` :
+Update the database connection parameters in the `.env` file:
 
 ```dotenv
 DATABASE_URL="mysql://root@127.0.0.1:3306/bilmo?serverVersion=mariadb-10.4.28&charset=utf8mb4"
 ```
 
-Installation des dépendances :
+Install dependencies:
 
 ```shell
 composer install
 ```
 
-Création de la base de données :
+Create the database:
 
 ```shell
 symfony console doctrine:database:create
 ```
 
-Exécution des migrations :
+Run migrations:
 
 ```shell
 symfony console doctrine:migrations:migrate
 ```
 
-Exécution des fixtures pour charger le jeu de données de test :
+Load fixtures to populate the database with test data:
 
 ```shell
 symfony console doctrine:fixtures:load
 ```
 
-Lancement du serveur :
+Generate the private and public key pair for the authentication system:
+
+```shell
+symfony console lexik:jwt:generate-keypair
+```
+
+Start the server:
 
 ```shell
 symfony server:start
 ```
 
-Une fois le serveur lancé, vous pouvez accéder à la documentation de l'API via l'URL :
+Once the server is running, you can access the API documentation via the URL:
 
 **127.0.0.1:8000/api/doc**
 
-*Le port peut varier en fonction des disponibilités sur votre machine.*
+*The port may vary depending on availability on your machine.*
 
-## Obtenir un token
+## Obtaining a Token
 
-Vous pouvez obtenir un token d'authentification en utilisant les identifiants suivants,
+You can obtain an authentication token using the following credentials:
 
-Adresse email : **client@smart.phone**  
-Mot de passe : **client**
+Email: **client@smart.phone**  
+Password: **client**
 
-Une fois votre token obtenu, vous pouvez l'utiliser en en-tête de reqête sous cette forme :
+Once you have obtained your token, you can use it as the request header in the following format:
 
 `Authorization: bearer votre_token`
 
-Ou directement dans la partie "Authorize" de la documentation sous cette forme :
+Or directly in the "Authorize" section of the documentation in this format:
 
 `bearer votre_token`
 
-## Nettoyage du cache
+## Clearing the Cache
 
-Bilmo met automatiquement en cache les données pour des raisons de performance. Le cache est actualisé en fonction des
-données ajoutées ou modifiées.
+BilMo automatically caches data for performance reasons. The cache is updated based on added or modified data.
 
-Vous pouvez cependant vider manuellement le cache :
+However, you can manually clear the cache:
 
 ```shell
 symfony console cache:clear
