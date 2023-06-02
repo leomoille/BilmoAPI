@@ -48,6 +48,21 @@ Une fois le serveur lancé, vous pouvez accéder à la documentation de l'API vi
 
 *Le port peut varier en fonction des disponibilités sur votre machine.*
 
+## Obtenir un token
+
+Vous pouvez obtenir un token d'authentification en utilisant les identifiants suivants,
+
+Adresse email : **client@smart.phone**  
+Mot de passe : **client**
+
+Une fois votre token obtenu, vous pouvez l'utiliser en en-tête de reqête sous cette forme :
+
+`Authorization: bearer votre_token`
+
+Ou directement dans la partie "Authorize" de la documentation sous cette forme :
+
+`bearer votre_token`
+
 ## Nettoyage du cache
 
 Bilmo met automatiquement en cache les données pour des raisons de performance. Le cache est actualisé en fonction des
