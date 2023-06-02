@@ -17,5 +17,8 @@
 ###< friendsofphp/php-cs-fixer ###
 
 ###> lexik/jwt-authentication-bundle ###
-/config/jwt/*.pem
+# NE DEVRAIT JAMAIS ETRE PRESENT DANS UN COMMIT
+# Ce chemin est commenté pour simplifier la mise en place
+# du projet dans le cadre de la soutenance du projet 7.
+# /config/jwt/*.pem
 ###< lexik/jwt-authentication-bundle ###
