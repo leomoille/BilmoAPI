@@ -1,3 +1,9 @@
 api_platform:
     title: 'BilMo'
-    version: '1.0.0'
+    description: 'Main API for BilMo app.'
+    version: 1.0.0
+    swagger:
+        api_keys:
+            JWT:
+                name: Authorization
+                type: header

@@ -2,14 +2,40 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\ClientRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ClientRepository::class)]
+#[ApiResource(
+    shortName: 'Client',
+    description: 'Clients',
+    operations: [
+        new Get(),
+        new GetCollection(),
+        new Post(),
+        new Put(),
+        new Patch(),
+        new Delete(),
+    ],
+    normalizationContext: [
+        'groups' => ['client:read'],
+    ],
+    denormalizationContext: [
+        'groups' => ['client:write'],
+    ]
+)]
 class Client implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -18,21 +44,26 @@ class Client implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
+    #[Groups(['client:read', 'client:write'])]
     private ?string $email = null;
 
     #[ORM\Column]
+    #[Groups(['client:read', 'client:write'])]
     private array $roles = [];
 
     /**
      * @var string The hashed password
      */
     #[ORM\Column]
+    #[Groups(['client:read', 'client:write'])]
     private ?string $password = null;
 
     #[ORM\OneToMany(mappedBy: 'client', targetEntity: User::class)]
+    #[Groups(['client:read', 'client:write'])]
     private Collection $users;
 
     #[ORM\OneToMany(mappedBy: 'client', targetEntity: Product::class)]
+    #[Groups(['client:read', 'client:write'])]
     private Collection $products;
 
     public function __construct()

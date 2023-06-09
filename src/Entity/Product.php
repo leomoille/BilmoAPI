@@ -2,51 +2,51 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\ProductRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Hateoas\Configuration\Annotation as Hateoas;
-use JMS\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @Hateoas\Relation(
- *      "self",
- *      href = @Hateoas\Route(
- *          "detailProduct",
- *          parameters = { "id" = "expr(object.getId())" }
- *      ),
- *      exclusion = @Hateoas\Exclusion(groups="getProducts")
- * )
- * @Hateoas\Relation(
- *      "delete",
- *      href = @Hateoas\Route(
- *          "deleteProduct",
- *          parameters = { "id" = "expr(object.getId())" },
- *      ),
- *      exclusion = @Hateoas\Exclusion(groups="getProducts")
- * )
- * @Hateoas\Relation(
- *      "update",
- *      href = @Hateoas\Route(
- *          "updateProduct",
- *          parameters = { "id" = "expr(object.getId())" },
- *      ),
- *      exclusion = @Hateoas\Exclusion(groups="getProducts")
- * )
- */
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
+#[ApiResource(
+    shortName: 'Products',
+    description: 'Produit du catalogue BilMo',
+    operations: [
+        new Get(),
+        new GetCollection(),
+        new Post(),
+        new Put(),
+        new Patch(),
+        new Delete(),
+    ],
+    normalizationContext: [
+        'groups' => ['product:read'],
+    ],
+    denormalizationContext: [
+        'groups' => ['product:write'],
+    ]
+)]
 class Product
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['getProducts', 'getUsers'])]
     private ?int $id = null;
 
+    /**
+     * Nom du produit.
+     */
     #[ORM\Column(length: 255)]
-    #[Groups(['getProducts', 'getUsers'])]
+    #[Groups(['product:read', 'product:write'])]
     #[Assert\NotBlank(message: 'Le produit doit avoir un nom')]
     #[Assert\Type('string', message: "La valeur {{ value }} n'est pas un {{ type }} valide")]
     #[Assert\Length(
@@ -57,22 +57,37 @@ class Product
     )]
     private ?string $name = null;
 
+    /**
+     * Prix du produit, en centime.
+     */
     #[ORM\Column]
-    #[Groups(['getProducts', 'getUsers'])]
+    #[Groups(['product:read', 'product:write'])]
     #[Assert\NotBlank(message: 'Le produit doit avoir un prix')]
     #[Assert\Positive(message: 'Le prix ne peut pas être négatif ou égale à 0')]
     #[Assert\Type('int', message: "La valeur {{ value }} n'est pas un {{ type }} valide")]
     private ?int $price = null;
 
+    /**
+     * Utilisateur possédant ce produit.
+     *
+     * @var Collection|ArrayCollection
+     */
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'products', cascade: ['persist'])]
-    #[Groups(['getProducts'])]
+    #[Groups(['product:read', 'product:write'])]
     private Collection $users;
 
+    /**
+     * Client propriétaire du produit.
+     */
     #[ORM\ManyToOne(inversedBy: 'products')]
+    #[Groups(['product:read', 'product:write'])]
     private ?Client $client = null;
 
+    /**
+     * Marque du produit.
+     */
     #[ORM\Column(length: 255)]
-    #[Groups(['getProducts', 'getUsers'])]
+    #[Groups(['product:read', 'product:write'])]
     #[Assert\Type('string', message: "La valeur {{ value }} n'est pas un {{ type }} valide")]
     #[Assert\Length(
         min: 1,

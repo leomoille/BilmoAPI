@@ -2,51 +2,48 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Hateoas\Configuration\Annotation as Hateoas;
-use JMS\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @Hateoas\Relation(
- *      "self",
- *      href = @Hateoas\Route(
- *          "detailUser",
- *          parameters = { "id" = "expr(object.getId())" }
- *      ),
- *      exclusion = @Hateoas\Exclusion(groups="getUsers")
- * )
- * @Hateoas\Relation(
- *      "delete",
- *      href = @Hateoas\Route(
- *          "deleteUser",
- *          parameters = { "id" = "expr(object.getId())" },
- *      ),
- *      exclusion = @Hateoas\Exclusion(groups="getUsers")
- * )
- * @Hateoas\Relation(
- *      "update",
- *      href = @Hateoas\Route(
- *          "updateUser",
- *          parameters = { "id" = "expr(object.getId())" },
- *      ),
- *      exclusion = @Hateoas\Exclusion(groups="getUsers")
- * )
- */
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+#[ApiResource(
+    shortName: 'User',
+    description: 'Utilisateurs',
+    operations: [
+        new Get(),
+        new GetCollection(),
+        new Post(),
+        new Put(),
+        new Patch(),
+        new Delete(),
+    ],
+    normalizationContext: [
+        'groups' => ['user:read'],
+    ],
+    denormalizationContext: [
+        'groups' => ['user:write'],
+    ]
+)]
 class User
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['getProducts', 'getUsers'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getProducts', 'getUsers'])]
+    #[Groups(['user:read', 'user:write'])]
     #[Assert\NotBlank(message: "L'utilisateur doit avoir un nom")]
     #[Assert\Length(
         min: 1,
@@ -57,7 +54,7 @@ class User
     private ?string $username = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['getProducts', 'getUsers'])]
+    #[Groups(['user:read', 'user:write'])]
     #[Assert\NotBlank(message: "L'utilisateur doit avoir un email")]
     #[Assert\Email(message: "L'email {{ value }} n'est pas un email valide")]
     #[Assert\Length(
@@ -69,10 +66,11 @@ class User
     private ?string $email = null;
 
     #[ORM\ManyToMany(targetEntity: Product::class, inversedBy: 'users', cascade: ['persist'])]
-    #[Groups(['getUsers'])]
+    #[Groups(['user:read', 'user:write'])]
     private Collection $products;
 
     #[ORM\ManyToOne(inversedBy: 'users')]
+    #[Groups(['user:read', 'user:write'])]
     private ?Client $client = null;
 
     public function __construct()
