@@ -25,7 +25,7 @@ DirectoryIndex index.php
     RewriteEngine On
 
     RewriteCond %{HTTPS} off
-    RewriteRule (.*) https://votre-domaine.com/$1 [R=301,L]
+    RewriteRule (.*) https://bilmo.leomoille.com/$1 [R=301,L]
 
     # Determine the RewriteBase automatically and set it as environment variable.
     # If you are using Apache aliases to do mass virtual hosting or installed the
