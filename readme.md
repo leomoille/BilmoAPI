@@ -6,10 +6,10 @@ API allowing BileMo clients to manage their customers and products.
 
 ## Local Project Installation
 
-Update the database connection parameters in the `.env` file:
+Add `.env.local` file inside root project folder with your database connexion parameters:
 
 ```dotenv
-DATABASE_URL="mysql://root@127.0.0.1:3306/bilmo?serverVersion=mariadb-10.4.28&charset=utf8mb4"
+DATABASE_URL="mysql://app:!ChangeMe!@127.0.0.1:3306/app?serverVersion=mariadb-10.4.28&charset=utf8mb4"
 ```
 
 Install dependencies:
@@ -63,18 +63,8 @@ Password: **client**
 
 Once you have obtained your token, you can use it as the request header in the following format:
 
-`Authorization: bearer votre_token`
+`Authorization: Bearer your_token`
 
 Or directly in the "Authorize" section of the documentation in this format:
 
-`bearer votre_token`
-
-## Clearing the Cache
-
-BilMo automatically caches data for performance reasons. The cache is updated based on added or modified data.
-
-However, you can manually clear the cache:
-
-```shell
-symfony console cache:clear
-```
+`Bearer your_token`
