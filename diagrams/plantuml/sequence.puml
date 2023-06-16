@@ -2,7 +2,7 @@
 'https://plantuml.com/sequence-diagram
 autonumber
 
-actor Client as user
+actor Utilisateur as user
 participant API as api
 database "Base de données" as db
 
