@@ -34,7 +34,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
     ],
     denormalizationContext: [
         'groups' => ['client:write'],
-    ]
+    ],
+    security: "is_granted('ROLE_ADMIN')"
 )]
 class Client implements UserInterface, PasswordAuthenticatedUserInterface
 {

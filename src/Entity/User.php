@@ -33,7 +33,8 @@ use Symfony\Component\Validator\Constraints as Assert;
     ],
     denormalizationContext: [
         'groups' => ['user:write'],
-    ]
+    ],
+    security: "is_granted('ROLE_USER')"
 )]
 class User
 {
@@ -70,7 +71,6 @@ class User
     private Collection $products;
 
     #[ORM\ManyToOne(inversedBy: 'users')]
-    #[Groups(['user:read', 'user:write'])]
     private ?Client $client = null;
 
     public function __construct()
