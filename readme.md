@@ -50,7 +50,7 @@ symfony server:start
 
 Once the server is running, you can access the API documentation via the URL:
 
-**127.0.0.1:8000/api/doc**
+**127.0.0.1:8000/api/docs**
 
 *The port may vary depending on availability on your machine.*
 
@@ -58,8 +58,11 @@ Once the server is running, you can access the API documentation via the URL:
 
 You can obtain an authentication token using the following credentials:
 
-Email: **client@smart.phone**  
-Password: **client**
+| Email               | Password |
+|---------------------|----------|
+| client1@smart.phone | password |
+| client2@smart.phone | password |
+| client3@smart.phone | password |
 
 Once you have obtained your token, you can use it as the request header in the following format:
 
