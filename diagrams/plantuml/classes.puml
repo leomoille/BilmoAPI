@@ -12,7 +12,7 @@ class Client {
 class Product {
     + name: String
     + brand: String
-    + price: Float
+    + price: Int
 }
 
 Client "*" o- "*" User
