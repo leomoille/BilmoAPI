@@ -43,6 +43,7 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
             cd ${{ secrets.APP_PATH }}
+            source ~/.profile
             composer install --no-dev --optimize-autoloader
 
       - name: Clear cache
