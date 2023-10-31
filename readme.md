@@ -4,59 +4,77 @@
 
 API allowing BileMo clients to manage their customers and products.
 
-## Local Project Installation
+> Dépot ouvert originalement lors de mon cursus de développeur backend PHP / Symfony chez OpenClassrooms.  
+> Le derniers commit publié lors de mes études : ####
 
-Add `.env.local` file inside root project folder with your database connexion parameters:
 
-```dotenv
-DATABASE_URL="mysql://app:!ChangeMe!@127.0.0.1:3306/app?serverVersion=mariadb-10.4.28&charset=utf8mb4"
-```
+## Prérequis
 
-Install dependencies:
+Pour pouvoir mettre en place SnowTricks vous aurez besoin des outils suivants :
+
+- PHP 8.2
+- Composer
+- NodeJS (et npm)
+- Symfony CLI
+- Docker
+
+## 1 - Installer les dépendances PHP
+
+Depuis un terminal dans le dossier du projet, lancez la commande suivante :
 
 ```shell
 composer install
 ```
 
-Create the database:
+## 2 - Installation des dépendances JS
+
+Depuis un terminal dans le dossier du projet, lancez la commande suivante :
 
 ```shell
-symfony console doctrine:database:create
+npm install
 ```
 
-Run migrations:
+## 3 - Démarrer le container Docker
+
+Démarrez le container contenant la base de données, le mail catcher ainsi qu'un phpMyAdmin
 
 ```shell
-symfony console doctrine:migrations:migrate
+docker compose up -d
 ```
 
-Load fixtures to populate the database with test data:
+## 4 - Charger les fixtures
+
+Depuis un terminal dans le dossier du projet, lancez la commande suivante :
 
 ```shell
-symfony console doctrine:fixtures:load
+symfony console d:f:l -n
 ```
 
-Generate the private and public key pair for the authentication system:
+## 5 - Build des assets
+
+Depuis un terminal dans le dossier du projet, lancez la commande suivante :
 
 ```shell
-symfony console lexik:jwt:generate-keypair
+npm run build
 ```
 
-Start the server:
+## 5 - Démarrer le serveur local
+
+Depuis un terminal dans le dossier du projet, lancez la commande suivante :
 
 ```shell
-symfony server:start
+symfony serve -d
 ```
 
-Once the server is running, you can access the API documentation via the URL:
+## 6 - Découvrir BilMo API !
 
-**127.0.0.1:8000/api/docs**
+Une fois le serveur démarré, vous pouvez vous rendre sur [127.0.0.1:8000/api/docs](http://127.0.0.1:8000/api/docs) pour naviguer sur le site.
 
-*The port may vary depending on availability on your machine.*
+> Par défaut, le serveur écoute sur le port `8000` mais si ce dernier est indisponible le port sera différent. Consultez l'output du terminal pour connaitre le port utilisé.
 
-## Obtaining a Token
+## 7 - Obtenir un token
 
-You can obtain an authentication token using the following credentials:
+Vous pouvez obtenir un token en utilisant un de ces comptes de démo :
 
 | Email               | Password |
 |---------------------|----------|
@@ -64,10 +82,10 @@ You can obtain an authentication token using the following credentials:
 | client2@smart.phone | password |
 | client3@smart.phone | password |
 
-Once you have obtained your token, you can use it as the request header in the following format:
+Une fois votre token obtenu, utilisez le en le passant dans le header de votre requête :
 
 `Authorization: Bearer your_token`
 
-Or directly in the "Authorize" section of the documentation in this format:
+Ou directement depuis la partie Authorize de la documentation de l'API :
 
 `Bearer your_token`
